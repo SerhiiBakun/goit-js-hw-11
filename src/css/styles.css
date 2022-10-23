@@ -84,6 +84,8 @@ button[type='submit'] {
 }
 
 .photo-card {
+  text-decoration: none;
+  color: currentColor;
   display: grid;
   grid-template-rows: minmax(250px, auto);
 }
