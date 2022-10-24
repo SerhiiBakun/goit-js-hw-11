@@ -10,14 +10,21 @@ import axiosGet from './js/axios';
 const refs = {
   form: document.querySelector('.search-form'),
   gallery: document.querySelector('.gallery'),
-  laodMore: document.querySelector('.load-more'),
+  intersect: document.querySelector('.intersect'),
 };
+
+const optionsIntObs = {
+  root: null,
+  rootMargin: '600px',
+  threshold: 1,
+};
+
+const observer = new IntersectionObserver(onLoadMore, optionsIntObs);
 
 let page = 0;
 let request = '';
 
 refs.form.addEventListener('submit', onSubmit);
-refs.laodMore.addEventListener('click', onLaodMore);
 refs.gallery.addEventListener('click', onGalleryClick);
 
 async function onSubmit(e) {
@@ -37,33 +44,37 @@ async function onSubmit(e) {
       return;
     }
     renderGallery(response.data.hits);
-    if (response.data.totalHits > 40) {
-      refs.laodMore.hidden = false;
-    }
     Notify.success(`"Hooray! We found ${response.data.totalHits} images."`);
     lightbox();
+    observer.observe(refs.intersect);
   } catch (e) {
     console.log(e.message);
   }
 }
 
-async function onLaodMore() {
-  try {
-    page += 1;
-    const response = await axiosGet(request, page);
-    const quantity =
-      document.querySelectorAll('.photo-card').length +
-      response.data.hits.length;
-    if (response.data.totalHits <= quantity) {
-      refs.laodMore.hidden = true;
-      Notify.info("We're sorry, but you've reached the end of search results.");
+async function onLoadMore(entries) {
+  await entries.forEach(async entry => {
+    if (entry.isIntersecting) {
+      try {
+        page += 1;
+        const response = await axiosGet(request, page);
+        const quantity =
+          document.querySelectorAll('.photo-card').length +
+          response.data.hits.length;
+        if (response.data.totalHits <= quantity) {
+          observer.unobserve(refs.intersect);
+          Notify.info(
+            "We're sorry, but you've reached the end of search results."
+          );
+        }
+        renderGallery(response.data.hits);
+        lightbox();
+        // slowScroll();
+      } catch (e) {
+        console.log(e.message);
+      }
     }
-    renderGallery(response.data.hits);
-    lightbox();
-    slowScroll();
-  } catch (e) {
-    console.log(e.message);
-  }
+  });
 }
 
 function renderGallery(data) {
@@ -71,7 +82,7 @@ function renderGallery(data) {
 }
 
 function resetRender() {
-  refs.laodMore.hidden = true;
+  // refs.laodMore.hidden = true;
   page = 0;
   refs.gallery.innerHTML = '';
 }
@@ -87,13 +98,13 @@ function lightbox() {
   lightbox.refresh();
 }
 
-function slowScroll() {
-  const { height: cardHeight } = document
-    .querySelector('.gallery')
-    .firstElementChild.getBoundingClientRect();
+// function slowScroll() {
+//   const { height: cardHeight } = document
+//     .querySelector('.gallery')
+//     .firstElementChild.getBoundingClientRect();
 
-  window.scrollBy({
-    top: cardHeight * 2.4,
-    behavior: 'smooth',
-  });
-}
+//   window.scrollBy({
+//     top: cardHeight * 2.4,
+//     behavior: 'smooth',
+//   });
+// }
