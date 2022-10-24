@@ -46,7 +46,7 @@ async function onSubmit(e) {
     renderGallery(response.data.hits);
     Notify.success(`"Hooray! We found ${response.data.totalHits} images."`);
     lightbox();
-    if (response.data.totalHits > 40) {
+    if (response.data.totalHits > response.data.hits.length) {
       observer.observe(refs.intersect);
     }
   } catch (e) {
