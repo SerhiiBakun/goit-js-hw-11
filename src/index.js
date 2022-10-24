@@ -21,6 +21,10 @@ const optionsIntObs = {
 
 const observer = new IntersectionObserver(onLoadMore, optionsIntObs);
 
+let lightbox = new SimpleLightbox('.gallery a', {
+  captionDelay: 250,
+});
+
 let page = 0;
 let request = '';
 
@@ -45,7 +49,7 @@ async function onSubmit(e) {
     }
     renderGallery(response.data.hits);
     Notify.success(`"Hooray! We found ${response.data.totalHits} images."`);
-    lightbox();
+    lightbox.refresh();
     if (response.data.totalHits > response.data.hits.length) {
       observer.observe(refs.intersect);
     }
@@ -70,7 +74,7 @@ async function onLoadMore(entries) {
           );
         }
         renderGallery(response.data.hits);
-        lightbox();
+        lightbox.refresh();
         // slowScroll();
       } catch (e) {
         console.log(e.message);
@@ -91,13 +95,6 @@ function resetRender() {
 
 function onGalleryClick(evt) {
   evt.preventDefault();
-}
-
-function lightbox() {
-  let lightbox = new SimpleLightbox('.gallery a', {
-    captionDelay: 250,
-  });
-  lightbox.refresh();
 }
 
 // function slowScroll() {
